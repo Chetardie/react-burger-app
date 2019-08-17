@@ -19,8 +19,9 @@ class BurgerBuilder extends Component {
             cheese: 2,
             meat: 1 
         },
-        totalPrice: 4
-    }
+        totalPrice: 4,
+        purchasable: false
+    };
 
     addIngredientHandler = (type) => {
         const oldCount = this.state.ingredients[type];
@@ -31,10 +32,12 @@ class BurgerBuilder extends Component {
         updatedIngredients[type] = updatedCount;
         const priceAddition = INGREDIENT_PRICES[type];
         const oldPrice = this.state.totalPrice;
-        const newPrice = oldPrice - priceAddition;
+        const newPrice = oldPrice + priceAddition;
 
         this.setState({totalPrice: newPrice, ingredients: updatedIngredients});
-    }
+        this.updatePurchaseState();
+    };
+
     removeIngredientHandler = (type) => {
         const oldCount = this.state.ingredients[type];
         if(oldCount<= 0) {
@@ -50,7 +53,23 @@ class BurgerBuilder extends Component {
         const newPrice = oldPrice - priceAddition;
 
         this.setState({totalPrice: newPrice, ingredients: updatedIngredients}); 
-    }
+        this.updatePurchaseState();
+    };
+
+    updatePurchaseState = () => {
+        const ingredients = {
+            ...this.state.ingredients
+        };
+
+        const sum = Object.keys(ingredients)
+            .map(igKey => {
+                return ingredients[igKey];
+            })
+            .reduce((sum, el) => {
+                return sum + el;
+            }, 0);
+            this.setState({purchasable: sum > 0});
+    };
 
     render() {
         const disabledInfo = {
@@ -65,7 +84,9 @@ class BurgerBuilder extends Component {
                 <BuildControls 
                     ingredientAdded={this.addIngredientHandler} 
                     ingredientRemoved={this.removeIngredientHandler}
-                    disabled={disabledInfo} />
+                    disabled={disabledInfo}
+                    price={this.state.totalPrice}
+                    purchasable={this.purchasable} />
             </Aux>
         );
     }
